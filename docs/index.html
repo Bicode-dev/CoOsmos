@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoOsmos — le système qui se manie comme Windows</title>
+<meta name="description" content="CoOsmos : un système d'exploitation gratuit, construit sur Arch Linux, qui se manie comme Windows. Menu Démarrer, Paramètres, Explorateur, programmes Windows. Sans compte, sans publicité, sans télémétrie.">
+<meta property="og:title" content="CoOsmos">
+<meta property="og:description" content="Le système qui se manie comme Windows, construit sur Arch Linux. Gratuit, sans compte, sans télémétrie.">
+<meta property="og:image" content="images/bureau-menu.png">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="images/logo.png">
+<script>document.documentElement.classList.add("js")</script>
+<style>
+/* Polices servies avec le site : aucune requête vers un service tiers */
+@font-face {
+  font-family: "Inter";
+  src: url("polices/InterVariable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --vide: #050506;
+  --nuit: #0b0b0d;
+  --surface: #121215;
+  --surface-2: #1a1a1e;
+  --trait: rgba(255, 255, 255, 0.08);
+  --trait-fort: rgba(255, 255, 255, 0.16);
+  --argent: #f4f4f6;
+  --argent-2: #c9c9cf;
+  --gris: #8a8a93;
+  --gris-2: #5d5d66;
+  --halo: rgba(244, 244, 246, 0.55);
+  --mono: ui-monospace, "Cascadia Mono", "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  --large: min(1200px, calc(100% - 32px));
+  --doux: cubic-bezier(.2, .8, .2, 1);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--vide);
+  color: var(--argent);
+  font: 400 16px/1.6 "Inter", system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+code { font: 500 0.9em var(--mono); background: rgba(255,255,255,.06); padding: 1px 6px; border-radius: 5px; }
+::selection { background: var(--argent); color: var(--vide); }
+:focus-visible { outline: 2px solid var(--argent); outline-offset: 3px; border-radius: 6px; }
+
+/* Grain très léger sur toute la page */
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: 100; pointer-events: none; opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ── Le lancement (comme le démarrage de CoOsmos) ─────────────────────────────── */
+#lancement {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center;
+  background: var(--vide); transition: opacity .7s ease, transform 1s var(--doux), visibility 0s .9s;
+}
+#lancement.fini { opacity: 0; transform: scale(1.25); visibility: hidden; pointer-events: none; }
+html:not(.js) #lancement, .sans-lancement #lancement { display: none; }
+.lancement-boite { display: grid; justify-items: center; gap: 26px; }
+.lancement-anneau { width: 92px; height: 92px; position: relative; }
+.lancement-anneau svg { position: absolute; inset: 0; overflow: visible; }
+.lancement-anneau circle.trace {
+  fill: none; stroke: var(--argent); stroke-width: 1.4; stroke-linecap: round;
+  stroke-dasharray: 280; stroke-dashoffset: 280; animation: trace 1.3s var(--doux) .1s forwards;
+}
+.lancement-anneau img { position: absolute; inset: 18px; width: 56px; height: 56px; opacity: 0; animation: apparait .6s ease .5s forwards; }
+@keyframes trace { to { stroke-dashoffset: 0; } }
+@keyframes apparait { to { opacity: 1; } }
+.lancement-mot { display: flex; gap: .42em; font-weight: 250; letter-spacing: .1em; font-size: 20px; }
+.lancement-mot span { opacity: 0; transform: translateY(8px); filter: blur(6px); animation: lettre .7s var(--doux) forwards; }
+@keyframes lettre { to { opacity: 1; transform: none; filter: none; } }
+.lancement-barre { width: 140px; height: 2px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
+.lancement-barre::after { content: ""; display: block; height: 100%; width: 100%; background: var(--argent); transform: translateX(-100%); animation: charge 1.4s var(--doux) .2s forwards; }
+@keyframes charge { to { transform: none; } }
+
+/* ── Barre du haut ──────────────────────────────────────────────────────────── */
+.haut {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 16px max(16px, calc((100% - 1200px) / 2));
+  transition: background .4s, padding .4s, border-color .4s;
+  border-bottom: 1px solid transparent;
+}
+.haut.colle { background: rgba(8, 8, 10, .72); backdrop-filter: blur(16px) saturate(140%); padding-top: 11px; padding-bottom: 11px; border-color: var(--trait); }
+.marque { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.marque img { width: 28px; height: 28px; }
+.marque span { font-weight: 300; letter-spacing: .32em; font-size: 13.5px; }
+.haut nav { display: flex; align-items: center; gap: 28px; font-size: 14px; color: var(--argent-2); }
+.haut nav a { text-decoration: none; position: relative; transition: color .2s; }
+.haut nav a:not(.bouton)::after { content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px; background: var(--argent); transform: scaleX(0); transform-origin: right; transition: transform .35s var(--doux); }
+.haut nav a:not(.bouton):hover { color: var(--argent); }
+.haut nav a:not(.bouton):hover::after { transform: scaleX(1); transform-origin: left; }
+.haut .bouton { padding: 9px 16px; font-size: 13.5px; }
+/* le menu des langues */
+.langue { position: relative; }
+.langue > button { display: inline-flex; align-items: center; gap: 7px; background: transparent; border: 1px solid var(--trait-fort); color: var(--argent-2); border-radius: 999px; padding: 7px 11px; font: 600 12px/1 var(--mono); letter-spacing: .08em; cursor: pointer; transition: background .2s, color .2s; }
+.langue > button:hover, .langue.ouvert > button { background: rgba(255,255,255,.07); color: var(--argent); }
+.langue svg { width: 14px; height: 14px; }
+.langue ul { position: absolute; right: 0; top: calc(100% + 10px); margin: 0; padding: 6px; list-style: none; min-width: 170px; background: rgba(20,20,24,.94); backdrop-filter: blur(16px); border: 1px solid var(--trait-fort); border-radius: 12px; box-shadow: 0 30px 60px -20px #000; opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top right; pointer-events: none; transition: opacity .25s, transform .3s var(--doux); }
+.langue.ouvert ul { opacity: 1; transform: none; pointer-events: auto; }
+.langue li button { width: 100%; text-align: left; background: transparent; border: 0; color: var(--argent-2); padding: 10px 12px; border-radius: 8px; font: 500 14px/1 "Inter", sans-serif; cursor: pointer; display: flex; justify-content: space-between; }
+.langue li button:hover { background: rgba(255,255,255,.07); color: var(--argent); }
+.langue li button[aria-current="true"] { color: var(--argent); font-weight: 650; }
+.langue li button[aria-current="true"]::after { content: "✓"; }
+.note-langue { margin: 14px 0 0; max-width: 56ch; font-size: 13.5px; color: var(--gris); }
+
+/* ── Boutons ────────────────────────────────────────────────────────────────── */
+.bouton {
+  position: relative; display: inline-flex; align-items: center; gap: 10px; overflow: hidden;
+  padding: 14px 24px; border-radius: 999px; text-decoration: none; cursor: pointer; border: 0;
+  font: 560 15px/1 "Inter", sans-serif; letter-spacing: -.01em;
+  transition: transform .35s var(--doux), background .3s, box-shadow .4s, color .3s;
+  will-change: transform;
+}
+.bouton.plein { background: var(--argent); color: var(--vide); }
+.bouton.plein:hover { box-shadow: 0 14px 50px -12px var(--halo), 0 0 0 6px rgba(244,244,246,.08); }
+/* reflet qui traverse le bouton au survol */
+.bouton.plein::before {
+  content: ""; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent); transition: transform .7s var(--doux);
+}
+.bouton.plein:hover::before { transform: translateX(120%) skewX(-20deg); }
+.bouton.creux { background: rgba(255,255,255,.03); border: 1px solid var(--trait-fort); color: var(--argent); backdrop-filter: blur(8px); }
+.bouton.creux:hover { background: rgba(255,255,255,.08); }
+.bouton svg { width: 16px; height: 16px; flex: none; position: relative; }
+.bouton span { position: relative; }
+
+/* ── Héros : le trou noir vivant ────────────────────────────────────────────── */
+/* le héros grandit avec son contenu : sur une fenêtre basse, le texte ne remonte jamais sous la barre du haut */
+.heros { position: relative; min-height: max(680px, 100vh); display: flex; overflow: hidden; isolation: isolate; }
+#trou-noir { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; }
+.heros::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(5,5,6,.92) 0%, rgba(5,5,6,.55) 34%, transparent 60%),
+    linear-gradient(to bottom, rgba(5,5,6,.6) 0%, transparent 18%, transparent 70%, var(--vide) 100%);
+}
+.heros .contenu {
+  position: relative; width: var(--large); margin: 0 auto;
+  display: flex; flex-direction: column; justify-content: center; padding: 128px 0 96px;
+}
+.etiquette { display: inline-flex; align-items: center; gap: 10px; font: 500 11.5px/1 var(--mono); letter-spacing: .22em; text-transform: uppercase; color: var(--gris); }
+.etiquette .pastille { width: 7px; height: 7px; border-radius: 50%; background: var(--argent); animation: pouls 2.4s ease-out infinite; }
+@keyframes pouls { 0% { box-shadow: 0 0 0 0 rgba(244,244,246,.6); } 100% { box-shadow: 0 0 0 12px rgba(244,244,246,0); } }
+.titre-heros {
+  margin: 22px 0 0; font-weight: 180; font-size: clamp(44px, 6.6vw, 98px); line-height: .98; letter-spacing: -.04em;
+}
+.titre-heros em { font-style: normal; font-weight: 640; letter-spacing: -.05em; }
+.titre-heros .l { display: block; overflow: hidden; padding-bottom: .06em; }
+.titre-heros .l > span { display: inline-block; transform: translateY(105%); }
+.pret .titre-heros .l > span { transform: none; transition: transform 1.15s var(--doux); }
+.pret .titre-heros .l:nth-child(2) > span { transition-delay: .09s; }
+.pret .titre-heros .l:nth-child(3) > span { transition-delay: .18s; }
+.pret .titre-heros .l:nth-child(4) > span { transition-delay: .27s; }
+.chapeau { max-width: 52ch; margin: 28px 0 0; font-size: clamp(16px, 1.5vw, 19px); color: var(--argent-2); font-weight: 350; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+.entree { opacity: 0; transform: translateY(16px); }
+.pret .entree { opacity: 1; transform: none; transition: opacity 1s ease, transform 1s var(--doux); }
+.pret .entree.d1 { transition-delay: .45s; } .pret .entree.d2 { transition-delay: .6s; } .pret .entree.d3 { transition-delay: .75s; }
+.reperes { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 48px; }
+.reperes span { font: 500 11.5px/1.6 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gris); }
+.reperes b { color: var(--argent-2); font-weight: 500; }
+/* étiquettes qui flottent autour du trou noir */
+.orbites { position: absolute; inset: 0; pointer-events: none; }
+.orbites span {
+  position: absolute; padding: 8px 14px; border-radius: 999px; font-size: 13px; color: var(--argent-2); white-space: nowrap;
+  background: rgba(20,20,24,.55); border: 1px solid var(--trait-fort); backdrop-filter: blur(10px);
+  opacity: 0; animation: flotte 7s ease-in-out infinite;
+}
+.pret .orbites span { opacity: 1; transition: opacity 1.2s ease 1s; }
+.orbites span:nth-child(1) { left: 58%; top: 22%; animation-delay: -1s; }
+.orbites span:nth-child(2) { left: 80%; top: 30%; animation-delay: -3s; }
+.orbites span:nth-child(3) { left: 84%; top: 64%; animation-delay: -5s; }
+.orbites span:nth-child(4) { left: 55%; top: 70%; animation-delay: -2s; }
+@keyframes flotte { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -14px, 0); } }
+.defiler { position: absolute; right: max(16px, calc((100% - 1200px) / 2)); bottom: 30px; display: grid; justify-items: center; gap: 10px; font: 500 10.5px/1 var(--mono); letter-spacing: .3em; color: var(--gris); text-transform: uppercase; }
+.defiler i { width: 1px; height: 44px; background: linear-gradient(var(--argent), transparent); transform-origin: top; animation: goutte 2.2s var(--doux) infinite; }
+@keyframes goutte { 0% { transform: scaleY(0); opacity: 1; } 60% { transform: scaleY(1); opacity: 1; } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* ── Bandeau qui défile ─────────────────────────────────────────────────────── */
+.bandeau { position: relative; overflow: hidden; padding: 26px 0; border-top: 1px solid var(--trait); border-bottom: 1px solid var(--trait); background: var(--nuit);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.bandeau .piste { display: flex; width: max-content; animation: glisse 48s linear infinite; }
+.bandeau:hover .piste { animation-play-state: paused; }
+.bandeau span { display: inline-flex; align-items: center; gap: 28px; padding-right: 28px; font-size: clamp(20px, 2.4vw, 30px); font-weight: 250; letter-spacing: -.02em; color: var(--argent-2); white-space: nowrap; }
+.bandeau span::after { content: "✦"; font-size: .55em; color: var(--gris-2); }
+@keyframes glisse { to { transform: translateX(-50%); } }
+
+/* ── Sections ───────────────────────────────────────────────────────────────── */
+section { width: var(--large); margin: 0 auto; padding: 140px 0 0; position: relative; }
+.titre-section { display: grid; gap: 16px; margin-bottom: 56px; max-width: 820px; }
+.titre-section h2 { margin: 0; font-weight: 220; font-size: clamp(34px, 5vw, 64px); line-height: 1.02; letter-spacing: -.035em; }
+.titre-section h2 em { font-style: normal; font-weight: 640; }
+.titre-section p { margin: 0; color: var(--argent-2); font-size: 17.5px; max-width: 60ch; }
+/* mots qui montent l'un après l'autre */
+.mot { display: inline-block; overflow: hidden; vertical-align: top; padding: .12em .02em .22em; margin: -.12em -.02em -.22em; }
+.mot > span { display: inline-block; transform: translateY(105%); transition: transform 1s var(--doux); transition-delay: calc(var(--i) * 45ms); }
+.vu .mot > span { transform: none; }
+html.js .revele { opacity: 0; transform: translateY(34px); transition: opacity 1s ease, transform 1.1s var(--doux); transition-delay: var(--retard, 0s); }
+html.js .revele.vu { opacity: 1; transform: none; }
+
+/* ── Aperçu : une fenêtre en 3D qui se redresse au défilement ───────────────── */
+.scene { perspective: 1600px; }
+.ecran {
+  position: relative; border-radius: 16px; overflow: hidden; transform-origin: 50% 0;
+  background: var(--nuit); border: 1px solid var(--trait-fort);
+  transform: rotateX(var(--rx, 22deg)) scale(var(--sc, .9)) translateY(var(--ty, 40px));
+  box-shadow: 0 80px 140px -50px rgba(0,0,0,.95), 0 0 0 1px rgba(0,0,0,.6), 0 0 120px -40px rgba(244,244,246,.22);
+  will-change: transform;
+}
+.ecran::before { /* reflet sur la vitre */
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(115deg, rgba(255,255,255,.08) 0%, transparent 30%, transparent 70%, rgba(255,255,255,.03) 100%);
+}
+.ecran .vue { position: relative; aspect-ratio: 16 / 10; background: #000; overflow: hidden; }
+.ecran .vue img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  opacity: 0; transform: scale(1.04); filter: blur(8px);
+  transition: opacity .7s ease, transform 1.2s var(--doux), filter .7s ease;
+}
+.ecran .vue img.actif { opacity: 1; transform: none; filter: none; }
+.barre-taches { position: relative; z-index: 3; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 6px; background: rgba(18,18,21,.97); border-top: 1px solid var(--trait); }
+.barre-taches::-webkit-scrollbar { display: none; }
+.barre-taches button {
+  flex: 0 0 auto; position: relative; overflow: hidden;
+  border: 0; background: transparent; color: var(--argent-2); cursor: pointer;
+  font: 500 13px/1 "Inter", sans-serif; padding: 12px 15px 13px; border-radius: 7px;
+  transition: background .2s, color .2s;
+}
+.barre-taches button:hover { background: rgba(255,255,255,.06); color: var(--argent); }
+.barre-taches button[aria-selected="true"] { background: rgba(255,255,255,.09); color: var(--argent); }
+/* le trait de l'application active, qui se remplit pendant l'affichage */
+.barre-taches button::after {
+  content: ""; position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; border-radius: 2px;
+  background: rgba(255,255,255,.12); opacity: 0; transition: opacity .3s;
+}
+.barre-taches button i { position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; border-radius: 2px; background: var(--argent); transform: scaleX(0); transform-origin: left; z-index: 1; }
+.barre-taches button[aria-selected="true"]::after { opacity: 1; }
+.barre-taches button[aria-selected="true"] i { animation: remplit var(--duree, 6s) linear forwards; }
+.barre-taches.arrete button[aria-selected="true"] i { animation: none; transform: scaleX(1); }
+@keyframes remplit { to { transform: scaleX(1); } }
+.legende { margin: 22px 4px 0; min-height: 3.4em; color: var(--argent-2); font-size: 15.5px; max-width: 82ch; }
+.legende b { color: var(--argent); font-weight: 600; }
+
+/* ── Ce qu'il contient : grille de cartes éclairées par la souris ──────────── */
+.bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+.carte {
+  --x: 50%; --y: 50%;
+  position: relative; overflow: hidden; border-radius: 18px; padding: 28px;
+  background: var(--nuit); border: 1px solid var(--trait); min-height: 240px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  transition: border-color .4s, opacity 1s ease, transform 1.1s var(--doux);
+}
+.carte::before { /* projecteur qui suit la souris */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; z-index: 1;
+  background: radial-gradient(520px circle at var(--x) var(--y), rgba(244,244,246,.09), transparent 42%);
+}
+.carte::after { /* bord qui s'allume près de la souris */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0; transition: opacity .4s; z-index: 2;
+  background: radial-gradient(300px circle at var(--x) var(--y), rgba(244,244,246,.55), transparent 50%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.carte:hover::before, .carte:hover::after { opacity: 1; }
+.carte:hover { border-color: rgba(255,255,255,.14); }
+.carte > :not(.visuel) { position: relative; z-index: 3; }
+.carte h3 { margin: 0 0 8px; font-size: 21px; font-weight: 620; letter-spacing: -.02em; line-height: 1.2; }
+.carte p { margin: 0; color: var(--argent-2); font-size: 15px; max-width: 46ch; }
+.carte .nom-app { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--gris); margin-bottom: 12px; }
+.carte .visuel { position: absolute; z-index: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--trait-fort); box-shadow: 0 30px 60px -20px #000; transition: transform .9s var(--doux); }
+.carte:hover .visuel { transform: translateY(-8px) scale(1.02); }
+.carte .visuel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, var(--nuit) 96%); }
+.c-menu { grid-column: span 4; grid-row: span 2; min-height: 540px; }
+.c-menu .visuel { left: 28px; right: 28px; top: 28px; }
+.c-rr { grid-column: span 2; grid-row: span 2; }
+.c-rr .visuel { left: 9%; top: 24px; width: 82%; }
+.c-param, .c-hangar { grid-column: span 3; min-height: 320px; }
+.c-param .visuel, .c-hangar .visuel { right: -40px; top: 24px; width: 72%; }
+.c-portail, .c-secu, .c-maj { grid-column: span 2; }
+.c-outils, .c-firefox { grid-column: span 3; }
+.c-sombre .visuel::after { background: linear-gradient(to left, transparent 30%, var(--nuit) 92%), linear-gradient(to bottom, transparent 50%, var(--nuit) 100%); }
+/* petites illustrations animées */
+.icone-anim { position: absolute !important; top: 26px; right: 26px; width: 56px; height: 56px; color: var(--argent); opacity: .9; }
+.icone-anim svg { width: 100%; height: 100%; overflow: visible; }
+.trace-svg { stroke-dasharray: 220; stroke-dashoffset: 220; transition: stroke-dashoffset 1.6s var(--doux) .3s; }
+.vu .trace-svg { stroke-dashoffset: 0; }
+.tourne { transform-origin: 28px 28px; transition: transform 1.2s var(--doux); }
+.carte:hover .tourne { transform: rotate(-360deg); }
+.exe { position: absolute !important; top: 24px; right: 24px; display: grid; place-items: center; width: 62px; height: 62px; border-radius: 14px; border: 1px solid var(--trait-fort); background: var(--surface-2); font: 600 13px/1 var(--mono); color: var(--argent); animation: flotte 5s ease-in-out infinite; }
+.exe::after { content: ""; position: absolute; inset: -8px; border-radius: 18px; border: 1px solid rgba(255,255,255,.12); animation: onde 2.6s ease-out infinite; }
+@keyframes onde { from { transform: scale(.9); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
+.puces { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.puces span { padding: 7px 12px; border-radius: 999px; font-size: 13px; color: var(--argent-2); border: 1px solid var(--trait-fort); background: rgba(255,255,255,.03); transition: transform .4s var(--doux); }
+.carte:hover .puces span { transform: translateY(-3px); }
+.carte:hover .puces span:nth-child(2) { transition-delay: .04s; } .carte:hover .puces span:nth-child(3) { transition-delay: .08s; }
+.carte:hover .puces span:nth-child(4) { transition-delay: .12s; } .carte:hover .puces span:nth-child(5) { transition-delay: .16s; }
+.empreinte { display: inline-flex; align-self: flex-start; position: relative; padding: 4px; border-radius: 999px; border: 1px solid var(--trait-fort); margin-bottom: 18px; font-size: 13px; }
+.empreinte span { position: relative; z-index: 1; width: 84px; text-align: center; padding: 6px 0; color: var(--gris); transition: color .5s; }
+.empreinte i { position: absolute; top: 4px; bottom: 4px; left: 4px; width: 84px; border-radius: 999px; background: var(--argent); transition: transform .6s var(--doux); }
+.empreinte.linux i { transform: translateX(84px); }
+.empreinte:not(.linux) span:first-of-type, .empreinte.linux span:last-of-type { color: var(--vide); }
+
+/* ── Ce qu'il ne fait pas : des zéros ───────────────────────────────────────── */
+.zeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.zeros > div { padding: 34px 30px 32px; border-radius: 18px; background: linear-gradient(170deg, var(--surface), var(--nuit) 70%); border: 1px solid var(--trait); }
+.zeros b { display: block; font-size: clamp(72px, 9vw, 128px); font-weight: 100; line-height: .9; letter-spacing: -.06em; font-variant-numeric: tabular-nums; }
+.zeros strong { display: block; margin-top: 14px; font-size: 20px; font-weight: 600; letter-spacing: -.02em; }
+.zeros p { margin: 8px 0 0; color: var(--argent-2); font-size: 15px; }
+
+/* ── Installer : une frise qui se remplit ───────────────────────────────────── */
+.frise { position: relative; display: grid; gap: 26px; padding-left: 64px; }
+.frise::before, .frise .remplie { content: ""; position: absolute; left: 19px; top: 8px; bottom: 8px; width: 1px; background: var(--trait-fort); }
+.frise .remplie { background: linear-gradient(var(--argent), rgba(244,244,246,.4)); transform-origin: top; transform: scaleY(var(--p, 0)); box-shadow: 0 0 12px rgba(244,244,246,.5); }
+.etape {
+  position: relative; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 44px; align-items: center;
+  padding: 34px; border-radius: 20px; background: linear-gradient(160deg, var(--surface) 0%, var(--nuit) 70%); border: 1px solid var(--trait);
+}
+.etape .numero {
+  position: absolute; left: -64px; top: 34px; width: 39px; height: 39px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--vide); border: 1px solid var(--trait-fort); font: 500 13px/1 var(--mono); color: var(--gris);
+  transition: background .5s .3s, color .5s .3s, border-color .5s .3s, box-shadow .5s .3s;
+}
+.etape.vu .numero { background: var(--argent); color: var(--vide); border-color: var(--argent); box-shadow: 0 0 0 6px rgba(244,244,246,.08), 0 0 30px rgba(244,244,246,.35); }
+.etape h3 { margin: 0 0 12px; font-size: clamp(22px, 2.4vw, 30px); font-weight: 620; letter-spacing: -.025em; line-height: 1.15; }
+.etape p { margin: 0 0 12px; color: var(--argent-2); }
+.etape ul { margin: 6px 0 0; padding: 0; list-style: none; color: var(--argent-2); font-size: 15px; }
+.etape li { position: relative; padding-left: 20px; margin: 7px 0; }
+.etape li::before { content: ""; position: absolute; left: 2px; top: .64em; width: 8px; height: 1px; background: var(--gris); }
+.etape .image { border-radius: 12px; overflow: hidden; border: 1px solid var(--trait-fort); box-shadow: 0 40px 80px -30px #000; transform: perspective(1000px) rotateY(var(--ry, 0deg)) rotateX(var(--rx2, 0deg)); transition: transform .5s var(--doux); }
+.etape .boutons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+kbd { font: 500 12.5px/1 var(--mono); padding: 3px 7px 4px; border-radius: 5px; border: 1px solid var(--trait-fort); border-bottom-width: 2px; background: var(--surface-2); color: var(--argent); }
+.note { margin-top: 16px; padding: 15px 17px; border-radius: 12px; background: rgba(255,255,255,.035); border: 1px solid var(--trait); font-size: 14.5px; color: var(--argent-2); }
+.note b { color: var(--argent); }
+.config { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 0; }
+.config > div { padding: 24px; border-radius: 16px; background: var(--nuit); border: 1px solid var(--trait); }
+.config dt { font: 500 11px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--gris); }
+.config dd { margin: 14px 0 0; font-size: 34px; font-weight: 200; letter-spacing: -.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.config dd small { display: block; margin-top: 8px; font-size: 13px; color: var(--gris); font-weight: 400; letter-spacing: 0; }
+
+/* ── Passez en hyperespace ──────────────────────────────────────────────────── */
+.saut { width: 100%; margin-top: 160px; padding: 0 16px; height: 88svh; min-height: 560px; max-height: 960px; overflow: hidden; isolation: isolate; display: grid; place-items: center; text-align: center; }
+#etoiles { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; }
+.saut::after { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at center, transparent 20%, var(--vide) 78%), linear-gradient(var(--vide), transparent 18%, transparent 82%, var(--vide)); pointer-events: none; }
+.saut h2 { margin: 18px 0 0; font-weight: 180; font-size: clamp(44px, 8vw, 120px); line-height: .95; letter-spacing: -.05em; }
+.saut h2 em { font-style: normal; font-weight: 650; }
+.saut p { margin: 22px auto 0; max-width: 46ch; color: var(--argent-2); font-size: 18px; }
+.saut .actions { justify-content: center; }
+
+/* ── Questions ──────────────────────────────────────────────────────────────── */
+.questions { border-top: 1px solid var(--trait); }
+details { border-bottom: 1px solid var(--trait); }
+summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 24px 2px; font-size: 19px; font-weight: 500; letter-spacing: -.015em; transition: color .2s, padding .3s var(--doux); }
+summary:hover { color: #fff; padding-left: 8px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--trait-fort); font: 300 20px/1 "Inter", sans-serif; color: var(--argent-2); transition: transform .4s var(--doux), background .3s; }
+details[open] summary::after { transform: rotate(135deg); background: rgba(255,255,255,.06); }
+details p { margin: 0 2px 26px; color: var(--argent-2); max-width: 75ch; animation: deplie .5s var(--doux); }
+@keyframes deplie { from { opacity: 0; transform: translateY(-8px); } }
+
+/* ── Pied ───────────────────────────────────────────────────────────────────── */
+footer { width: var(--large); margin: 120px auto 0; padding: 36px 0 52px; border-top: 1px solid var(--trait); display: flex; flex-wrap: wrap; gap: 18px 40px; justify-content: space-between; align-items: center; color: var(--gris); font-size: 14px; }
+footer nav { display: flex; flex-wrap: wrap; gap: 22px; }
+footer a { text-decoration: none; color: var(--argent-2); transition: color .2s; }
+footer a:hover { color: var(--argent); }
+.logo-pied { width: 170px; opacity: .9; mix-blend-mode: lighten; }
+
+/* Le saut en hyperespace, plein écran, quand on clique sur « Installer » */
+#saut-ecran { position: fixed; inset: 0; z-index: 80; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity .35s ease; }
+#saut-ecran.actif { opacity: 1; }
+
+/* ── Petits écrans ──────────────────────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .orbites { display: none; }
+  .bento { grid-template-columns: repeat(2, 1fr); }
+  .c-menu, .c-rr, .c-param, .c-hangar, .c-portail, .c-secu, .c-maj, .c-outils, .c-firefox { grid-column: span 2; grid-row: auto; }
+  .c-menu { min-height: 460px; } .c-rr { min-height: 520px; }
+  .etape { grid-template-columns: 1fr; gap: 26px; padding: 24px; }
+  .config { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .haut nav a:not(.bouton) { display: none; }
+  .heros::after { background: linear-gradient(to bottom, rgba(5,5,6,.25) 0, transparent 70px, transparent 30vh, rgba(5,5,6,.92) 46vh, var(--vide) 58vh); }
+  .heros .contenu { justify-content: flex-end; padding: 44vh 0 84px; }
+  .zeros { grid-template-columns: 1fr; }
+  section { padding-top: 100px; }
+  .frise { padding-left: 0; }
+  .frise::before, .frise .remplie { display: none; }
+  .etape .numero { position: static; margin-bottom: -6px; }
+  .c-param .visuel, .c-hangar .visuel { position: relative; right: auto; top: auto; width: 100%; margin-bottom: 18px; }
+  .c-param, .c-hangar { justify-content: flex-start; }
+  .c-menu { min-height: 380px; }
+}
+@media (max-width: 520px) {
+  .haut nav .bouton { display: none; }
+  .config { grid-template-columns: 1fr; }
+  .actions .bouton { width: 100%; justify-content: center; }
+  .defiler { display: none; }
+  .c-rr { min-height: 560px; }
+}
+/* mode capture (?vue=…) : l'état final, sans transition */
+.capture *, .capture *::before, .capture *::after { transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; animation-iteration-count: 1 !important; transition-duration: .001s !important; }
+  .bandeau .piste { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="lancement" aria-hidden="true">
+  <div class="lancement-boite">
+    <div class="lancement-anneau">
+      <svg viewBox="0 0 92 92"><circle class="trace" cx="46" cy="46" r="44.5"/></svg>
+      <img src="images/logo.png" alt="">
+    </div>
+    <div class="lancement-mot"><span style="animation-delay:.35s">C</span><span style="animation-delay:.42s">O</span><span style="animation-delay:.49s">·</span><span style="animation-delay:.56s">O</span><span style="animation-delay:.63s">S</span><span style="animation-delay:.7s">M</span><span style="animation-delay:.77s">O</span><span style="animation-delay:.84s">S</span></div>
+    <div class="lancement-barre"></div>
+  </div>
+</div>
+<canvas id="saut-ecran" aria-hidden="true"></canvas>
+
+<header class="haut" id="haut">
+  <a class="marque" href="#"><img src="images/logo.png" alt=""><span>CO·OSMOS</span></a>
+  <nav aria-label="Sections">
+    <a href="#apercu">Aperçu</a>
+    <a href="#contenu">Ce qu'il contient</a>
+    <a href="#installer">Installer</a>
+    <a href="#questions">Questions</a>
+    <div class="langue" id="langue">
+      <button type="button" aria-haspopup="true" aria-expanded="false" aria-label="Langue · Language">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><path d="M1.7 8h12.6M8 1.7c1.9 2 2.8 4 2.8 6.3S9.9 12.3 8 14.3C6.1 12.3 5.2 10.3 5.2 8S6.1 3.7 8 1.7z"/></svg>
+        <b>FR</b>
+      </button>
+      <ul></ul>
+    </div>
+    <a class="bouton plein magnetique sauter" href="#installer"><span>Essayer CoOsmos</span></a>
+  </nav>
+</header>
+
+<main>
+  <div class="heros" id="heros">
+    <canvas id="trou-noir" aria-hidden="true"></canvas>
+    <div class="orbites" aria-hidden="true">
+      <span>Menu Démarrer</span><span>Programmes Windows</span><span>Secure Boot</span><span>Sans télémétrie</span>
+    </div>
+    <div class="contenu">
+      <div class="etiquette entree"><i class="pastille"></i>Système d'exploitation · gratuit · version 2026.10.21</div>
+      <h1 class="titre-heros">
+        <span class="l"><span>Tout ce que</span></span>
+        <span class="l"><span>vous connaissez.</span></span>
+        <span class="l"><span><em>Rien de ce qui</em></span></span>
+        <span class="l"><span><em>vous surveille.</em></span></span>
+      </h1>
+      <p class="chapeau entree d1">CoOsmos se manie comme Windows : menu Démarrer, barre des tâches, Paramètres, Explorateur
+        de fichiers, et même vos programmes Windows. Dessous, Arch Linux. Sans compte à créer, sans publicité,
+        sans aucune donnée envoyée.</p>
+      <p class="note-langue entree d1" hidden>L'interface de CoOsmos est en français pour l'instant ; les formats et les claviers de votre pays sont pris en charge.</p>
+      <div class="actions entree d2">
+        <a class="bouton plein magnetique sauter" href="#installer">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.8 8 10.3l3.5-3.5M2.5 13.5h11"/></svg>
+          <span>Installer CoOsmos</span>
+        </a>
+        <a class="bouton creux magnetique" href="#apercu"><span>Voir l'aperçu</span></a>
+      </div>
+      <div class="reperes entree d3">
+        <span>PC <b>64 bits</b></span><span><b>UEFI</b> et <b>BIOS</b></span><span>Secure Boot <b>pris en charge</b></span><span>Langue <b>français</b></span>
+      </div>
+    </div>
+    <div class="defiler" aria-hidden="true"><span>Défiler</span><i></i></div>
+  </div>
+
+  <div class="bandeau" aria-hidden="true">
+    <div class="piste">
+      <span>Menu Démarrer</span><span>Réglages rapides</span><span>Paramètres</span><span>Explorateur de fichiers</span><span>Programmes Windows</span><span>Antivirus</span><span>Chiffrement du disque</span><span>Points de restauration</span><span>Outil Capture d'écran</span><span>Paint</span><span>Gestionnaire des tâches</span><span>Éclairage nocturne</span><span>Firefox protégé</span><span>Mode sans échec</span>
+      <span>Menu Démarrer</span><span>Réglages rapides</span><span>Paramètres</span><span>Explorateur de fichiers</span><span>Programmes Windows</span><span>Antivirus</span><span>Chiffrement du disque</span><span>Points de restauration</span><span>Outil Capture d'écran</span><span>Paint</span><span>Gestionnaire des tâches</span><span>Éclairage nocturne</span><span>Firefox protégé</span><span>Mode sans échec</span>
+    </div>
+  </div>
+
+  <!-- ── Aperçu ─────────────────────────────────────────────────────────────── -->
+  <section id="apercu">
+    <div class="titre-section">
+      <div class="etiquette revele">Aperçu</div>
+      <h2 class="mots">Le bureau que vous avez <em>déjà dans les doigts.</em></h2>
+      <p class="revele">Pas de nouvelle logique à apprendre : chaque chose est là où vous la cherchez. Cliquez sur la
+        barre des tâches pour passer d'une application à l'autre.</p>
+    </div>
+    <div class="scene">
+      <div class="ecran" id="ecran">
+        <div class="vue" id="vue"></div>
+        <div class="barre-taches" role="tablist" aria-label="Captures d'écran" id="barre"></div>
+      </div>
+    </div>
+    <p class="legende" id="legende" aria-live="polite"></p>
+  </section>
+
+  <!-- ── Ce qu'il contient ──────────────────────────────────────────────────── -->
+  <section id="contenu">
+    <div class="titre-section">
+      <div class="etiquette revele">Ce qu'il contient</div>
+      <h2 class="mots">Tout est à sa place, <em>dès le premier démarrage.</em></h2>
+      <p class="revele">Les applications de CoOsmos sont écrites pour lui, en français, au visuel de Windows 11. Le
+        reste vient des meilleurs logiciels libres, réglés pour vous.</p>
+    </div>
+    <div class="bento">
+      <article class="carte c-menu revele">
+        <div class="visuel"><img src="images/bureau-menu.png" alt="" loading="lazy"></div>
+        <div class="nom-app">Orbite</div>
+        <h3>Menu Démarrer et barre des tâches</h3>
+        <p>Toutes les applications, les vignettes épinglées, la recherche, les notifications, <kbd>Win</kbd>+<kbd>V</kbd> pour le presse-papiers et <kbd>Win</kbd>+<kbd>R</kbd> pour Exécuter.</p>
+      </article>
+      <article class="carte c-rr revele" style="--retard:.08s">
+        <div class="visuel"><img src="images/reglages-rapides.png" alt="" loading="lazy"></div>
+        <div class="nom-app">Réglages rapides</div>
+        <h3>Wi-Fi, Bluetooth, son, luminosité</h3>
+        <p>Les réseaux connus se reconnectent tout seuls, comme sous Windows.</p>
+      </article>
+      <article class="carte c-param c-sombre revele">
+        <div class="visuel"><img src="images/parametres.png" alt="" loading="lazy"></div>
+        <div class="nom-app">Station</div>
+        <h3>Paramètres</h3>
+        <p>Les mêmes pages, dans le même ordre : Système, Bluetooth, Réseau, Personnalisation, Comptes…</p>
+      </article>
+      <article class="carte c-hangar c-sombre revele" style="--retard:.08s">
+        <div class="visuel"><img src="images/hangar.png" alt="" loading="lazy"></div>
+        <div class="nom-app">Hangar</div>
+        <h3>Explorateur de fichiers</h3>
+        <p>Onglets, volet de détails, Ce PC, et « Retirer le périphérique en toute sécurité » pour les clés USB.</p>
+      </article>
+      <article class="carte c-portail revele">
+        <div class="exe">.exe</div>
+        <div class="nom-app">Portail</div>
+        <h3>Vos programmes Windows</h3>
+        <p>Un double-clic sur un <code>.exe</code> suffit : l'environnement Windows est préparé dès le premier démarrage.</p>
+      </article>
+      <article class="carte c-secu revele" style="--retard:.08s">
+        <div class="icone-anim"><svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path class="trace-svg" d="M28 5 47 12v14c0 13-8.5 21-19 25C17.5 47 9 39 9 26V12z"/><path class="trace-svg" d="m20 28 6 6 11-12"/></svg></div>
+        <div class="nom-app">Sécurité</div>
+        <h3>Protégé d'office</h3>
+        <p>Antivirus prêt, pare-feu activé, chiffrement du disque façon BitLocker, Secure Boot.</p>
+      </article>
+      <article class="carte c-maj revele" style="--retard:.16s">
+        <div class="icone-anim"><svg viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><g class="tourne"><path class="trace-svg" d="M46 28a18 18 0 1 1-5.3-12.7"/><path class="trace-svg" d="M47 9v8h-8"/></g></svg></div>
+        <div class="nom-app">Mises à jour</div>
+        <h3>Et un retour en arrière</h3>
+        <p>Mises à jour sans mot de passe, et un point de restauration avant chacune.</p>
+      </article>
+      <article class="carte c-outils revele">
+        <div class="puces"><span>Gestionnaire des tâches</span><span>Outil Capture d'écran</span><span>Paint</span><span>Calculatrice</span><span>Terminal</span></div>
+        <div class="nom-app">Le quotidien</div>
+        <h3>Les outils que vous ouvrez sans réfléchir</h3>
+        <p>Capture avec annotations et vidéo, dessin, calculs, processus en direct.</p>
+      </article>
+      <article class="carte c-firefox revele" style="--retard:.08s">
+        <div class="empreinte" id="empreinte"><i></i><span>Windows</span><span>Linux</span></div>
+        <div class="nom-app">Firefox</div>
+        <h3>Protégé, et discret</h3>
+        <p>uBlock Origin et Privacy Badger installés, et un bouton pour présenter aux sites une empreinte Windows ou Linux.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ── Ce qu'il ne fait pas ───────────────────────────────────────────────── -->
+  <section>
+    <div class="titre-section">
+      <div class="etiquette revele">Ce qu'il ne fait pas</div>
+      <h2 class="mots">Ce qui se passe sur votre PC <em>reste sur votre PC.</em></h2>
+    </div>
+    <div class="zeros">
+      <div class="revele"><b class="compteur" data-de="128" data-a="0">0</b><strong>compte à créer</strong><p>Un compte local, créé au premier démarrage. Rien à associer, rien à synchroniser.</p></div>
+      <div class="revele" style="--retard:.1s"><b class="compteur" data-de="256" data-a="0">0</b><strong>donnée envoyée</strong><p>Ni diagnostic, ni identifiant, ni statistique. CoOsmos ne parle à personne de vous.</p></div>
+      <div class="revele" style="--retard:.2s"><b class="compteur" data-de="64" data-a="0">0</b><strong>publicité</strong><p>Pas de suggestions dans le menu Démarrer, pas d'applications installées en douce.</p></div>
+    </div>
+  </section>
+
+  <!-- ── Installer ──────────────────────────────────────────────────────────── -->
+  <section id="installer">
+    <div class="titre-section">
+      <div class="etiquette revele">Installer</div>
+      <h2 class="mots">Quatre étapes, <em>une clé USB.</em></h2>
+      <p class="revele">Comptez une clé USB de 8 Go ou plus (son contenu sera effacé) et une vingtaine de minutes.
+        Vous pouvez tout essayer avant d'installer quoi que ce soit.</p>
+    </div>
+
+    <div class="frise" id="frise">
+      <i class="remplie" aria-hidden="true"></i>
+      <article class="etape revele">
+        <span class="numero">01</span>
+        <div>
+          <h3>Créez la clé avec Hyperespace</h3>
+          <p>Hyperespace télécharge la dernière version de CoOsmos, vérifie qu'elle est intacte, l'écrit sur la clé et
+            relit tout avant de vous proposer de l'éjecter.</p>
+          <ul>
+            <li>Windows : un seul fichier, sans installation.</li>
+            <li>Linux : une archive à décompresser.</li>
+            <li>Vous avez déjà l'image de CoOsmos ? « J'ai déjà l'image… » la prend telle quelle.</li>
+          </ul>
+          <div class="boutons"><a class="bouton plein magnetique" href="https://github.com/Bicode-dev/CoOsmos/releases/latest"><span>Télécharger Hyperespace</span></a></div>
+        </div>
+        <div class="image inclinable"><img src="images/hyperespace.png" alt="Hyperespace sur Windows : « Créer une clé CoOsmos », l'image choisie, la clé USB, puis « Passer en hyperespace »." loading="lazy"></div>
+      </article>
+
+      <article class="etape revele">
+        <span class="numero">02</span>
+        <div>
+          <h3>Démarrez l'ordinateur sur la clé</h3>
+          <p>Branchez la clé, redémarrez, et appuyez aussitôt sur la touche du menu de démarrage de votre PC :
+            souvent <kbd>F12</kbd>, <kbd>F11</kbd>, <kbd>F8</kbd> ou <kbd>Échap</kbd>. Choisissez la clé : CoOsmos
+            démarre en direct, sans rien toucher au disque.</p>
+          <div class="note"><b>Secure Boot activé ?</b> Pas besoin de le couper. Au premier démarrage sur la clé, un
+            écran bleu s'ouvre une seule fois : choisissez « Enroll key from disk », puis le fichier
+            <code>CoOsmos-SecureBoot.cer</code>, « Continue », « Yes » et « Reboot ». Une fois CoOsmos installé, cet
+            écran revient une fois : « Enroll MOK », puis le mot de passe <kbd>orbite</kbd>.</div>
+        </div>
+        <div class="image inclinable"><img src="images/installation.png" alt="L'installation de CoOsmos : le logo et le bouton « Installer maintenant »." loading="lazy"></div>
+      </article>
+
+      <article class="etape revele">
+        <span class="numero">03</span>
+        <div>
+          <h3>Installer maintenant</h3>
+          <p>Comme l'installation de Windows : langue et clavier, contrat de licence, puis l'endroit où installer.</p>
+          <ul>
+            <li>Sur un disque entier, ou dans l'espace libre à côté de Windows.</li>
+            <li>Chiffrement du disque au choix, avec une clé de récupération.</li>
+            <li>CoOsmos déjà installé ? « Mise à niveau » garde fichiers, paramètres et applications.</li>
+          </ul>
+        </div>
+        <div class="image inclinable"><img src="images/mise-a-niveau.png" alt="« Quel type d'installation voulez-vous effectuer ? » : Mise à niveau, qui garde les fichiers, ou Personnalisé." loading="lazy"></div>
+      </article>
+
+      <article class="etape revele">
+        <span class="numero">04</span>
+        <div>
+          <h3>Premier démarrage</h3>
+          <p>Pays, clavier, nom du PC, votre compte et sa photo, la couleur d'accent, la confidentialité. Puis le
+            bureau. Le Wi-Fi rejoint pendant l'installation est déjà connu.</p>
+        </div>
+        <div class="image inclinable"><img src="images/accueil-region.png" alt="Le premier démarrage : « Est-ce le bon pays ou la bonne région ? »" loading="lazy"></div>
+      </article>
+    </div>
+
+    <dl class="config" aria-label="Configuration requise">
+      <div class="revele"><dt>Processeur</dt><dd><span class="compteur" data-de="0" data-a="64">64</span> <span class="unite">bits</span><small>Intel ou AMD (x86-64)</small></dd></div>
+      <div class="revele" style="--retard:.08s"><dt>Mémoire</dt><dd><span class="compteur" data-de="0" data-a="4">4</span> <span class="unite">Go</span><small>8 Go conseillés</small></dd></div>
+      <div class="revele" style="--retard:.16s"><dt>Disque</dt><dd><span class="compteur" data-de="0" data-a="20">20</span> <span class="unite">Go</span><small>libres, ou un disque entier</small></dd></div>
+      <div class="revele" style="--retard:.24s"><dt>Démarrage</dt><dd>UEFI · BIOS<small>Secure Boot pris en charge</small></dd></div>
+    </dl>
+  </section>
+
+  <!-- ── Passez en hyperespace ──────────────────────────────────────────────── -->
+  <section class="saut" id="saut">
+    <canvas id="etoiles" aria-hidden="true"></canvas>
+    <div>
+      <div class="etiquette revele">Prêt pour le décollage</div>
+      <h2 class="mots">Passez en <em>hyperespace.</em></h2>
+      <p class="revele">Une clé USB, vingt minutes, et un bureau que vous connaissez déjà. Essayez CoOsmos en direct :
+        rien n'est installé tant que vous ne l'avez pas décidé.</p>
+      <div class="actions revele">
+        <a class="bouton plein magnetique" id="bouton-saut" href="https://github.com/Bicode-dev/CoOsmos/releases/latest">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.8 8 10.3l3.5-3.5M2.5 13.5h11"/></svg>
+          <span>Télécharger Hyperespace</span>
+        </a>
+        <a class="bouton creux magnetique" href="#installer"><span>Revoir les étapes</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Questions ──────────────────────────────────────────────────────────── -->
+  <section id="questions">
+    <div class="titre-section">
+      <div class="etiquette revele">Questions</div>
+      <h2 class="mots">Avant de vous <em>lancer.</em></h2>
+    </div>
+    <div class="questions revele">
+      <details><summary>CoOsmos est-il vraiment gratuit ?</summary><p>Oui, sur autant d'ordinateurs que vous voulez. Vous pouvez aussi le redistribuer tel quel, le montrer en vidéo ou en capture.</p></details>
+      <details><summary>Est-ce que je peux garder Windows ?</summary><p>Oui : installez CoOsmos dans l'espace libre du disque, à côté de Windows. Au démarrage, un menu vous laisse choisir. Sauvegardez quand même vos fichiers importants avant d'installer un système.</p></details>
+      <details><summary>Mes programmes Windows fonctionneront-ils ?</summary><p>Beaucoup, oui : un double-clic sur un <code>.exe</code> le lance, grâce à Wine, préparé dès le premier démarrage. Les jeux protégés par un anti-triche et certains logiciels très liés à Windows peuvent refuser de fonctionner.</p></details>
+      <details><summary>Comment se font les mises à jour ?</summary><p>Comme Windows Update : CoOsmos les cherche tout seul, une icône apparaît dans la barre des tâches, et un point de restauration est pris avant chaque installation.</p></details>
+      <details><summary>Puis-je essayer sans rien installer ?</summary><p>Oui : la clé démarre d'abord sur CoOsmos en direct. Vous pouvez tout essayer, puis lancer l'installation depuis le bureau, ou simplement redémarrer.</p></details>
+      <details><summary>Qui fait CoOsmos, et sous quelle licence ?</summary><p>CoOsmos est créé par Bicode_DEV. Vous pouvez l'utiliser et le redistribuer tel quel ; copier ou réutiliser son code, ses visuels ou ses textes demande l'accord écrit de Bicode_DEV. Les logiciels d'autres auteurs qu'il contient gardent leur propre licence, et pour les parties sous GPL, c'est la <a href="https://github.com/Bicode-dev/CoOsmos/blob/main/licences/GPL-3.0.txt">GNU GPL v3</a> qui s'applique. Le texte complet est dans <a href="https://github.com/Bicode-dev/CoOsmos/blob/main/LICENCE.md">LICENCE.md</a>.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <img class="logo-pied" src="images/logo-complet.png" alt="CoOsmos">
+  <nav aria-label="Liens">
+    <a href="https://github.com/Bicode-dev/CoOsmos/releases/latest">Télécharger</a>
+    <a href="https://github.com/Bicode-dev/CoOsmos/blob/main/LICENCE.md">Licence</a>
+    <a href="https://github.com/Bicode-dev/CoOsmos/blob/main/licences/GPL-3.0.txt">GNU GPL v3</a>
+    <a href="https://github.com/Bicode-dev">Bicode-dev sur GitHub</a>
+  </nav>
+  <span>© 2026 Bicode_DEV — CoOsmos</span>
+</footer>
+
+<script src="traductions.js"></script>
+<script src="langues.js"></script>
+<script>
+const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const tactile = matchMedia("(hover: none)").matches;
+const borne = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ── Le lancement : une fois par visite, et un clic le passe ───────────────────────────────────────
+(function () {
+  const ecran = document.getElementById("lancement");
+  let deja = false;
+  try { deja = sessionStorage.getItem("coosmos-lance") === "1"; sessionStorage.setItem("coosmos-lance", "1"); } catch (e) {}
+  const finir = () => { ecran.classList.add("fini"); document.body.classList.add("pret"); };
+  if (deja || calme || location.hash || location.search.includes("vue=")) { document.documentElement.classList.add("sans-lancement"); finir(); return; }
+  ecran.addEventListener("click", finir);
+  setTimeout(finir, 1750);
+})();
+
+// ── Le trou noir du héros : le rendu de CoOsmos (le fond d'écran), animé ─────────────────────────
+// L'image garde toute sa finesse ; par-dessus, de la lumière file le long des anneaux du disque, des
+// éclats tournent sur l'anneau de photons, la lueur respire. On s'en approche en défilant, il suit la souris.
+(function () {
+  const toile = document.getElementById("trou-noir"), ctx = toile.getContext("2d", { alpha: false });
+  const heros = document.getElementById("heros");
+  // Géométrie mesurée dans l'image (2560 × 1440) : centre de l'ombre, rayon, inclinaison du disque
+  const IMG_L = 2560, IMG_H = 1440, CX = 1765, CY = 630, R = 92, PENTE = -11.4 * Math.PI / 180, APLATI = .15;
+  const cosP = Math.cos(PENTE), sinP = Math.sin(PENTE);
+  const fond = new Image();
+  fond.src = "images/trou-noir.png";
+  let L = 0, H = 0, dpr = 1, base = { s: 1, x: 0, y: 0 }, zoom = 1, px = 0, py = 0, pxV = 0, pyV = 0, visible = true, t0 = 0, temps = 0;
+  // la lumière qui file sur le disque, et les éclats de l'anneau de photons
+  const filets = Array.from({ length: 170 }, () => {
+    const r = R * (1.55 + Math.pow(Math.random(), 1.35) * 4);
+    return { r, a: Math.random() * Math.PI * 2, v: .55 * Math.pow(R * 1.55 / r, 1.5) * (.85 + Math.random() * .3), e: .35 + Math.random() * .65, w: .8 + Math.random() * 1.4 };
+  });
+  const eclats = Array.from({ length: 16 }, () => ({ r: R * (1.28 + Math.random() * .2), a: Math.random() * Math.PI * 2, v: .7 + Math.random() * .6, e: .4 + Math.random() * .6 }));
+  function dimensionner() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    L = toile.clientWidth; H = toile.clientHeight;
+    toile.width = Math.round(L * dpr); toile.height = Math.round(H * dpr);
+    // grand écran : le trou noir à droite du texte ; téléphone : en haut, au-dessus du texte
+    // V : la partie du héros visible à l'arrivée (le héros peut dépasser l'écran sur une fenêtre basse)
+    const large = L > 760, V = Math.min(H, innerHeight);
+    const s = Math.max(L / IMG_L, V / IMG_H) * (large ? 1.04 : 1.1);
+    const hx = large ? L * .7 : L * .5, hy = large ? V * .46 : V * .24;
+    base = {
+      s,
+      x: borne(hx - CX * s, L - IMG_L * s, 0),
+      y: borne(hy - CY * s, V - IMG_H * s, 0),       // l'image couvre la partie visible ; dessous, le dégradé du héros
+    };
+  }
+  // un point du disque (rayon r, angle a) dans l'image, disque incliné et vu presque par la tranche
+  function point(r, a) {
+    const X = r * Math.cos(a), Y = r * APLATI * Math.sin(a);
+    return [CX + X * cosP - Y * sinP, CY + X * sinP + Y * cosP];
+  }
+  function image(dt) {
+    temps += dt;
+    px += (pxV - px) * .05; py += (pyV - py) * .05;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#050506"; ctx.fillRect(0, 0, L, H);
+    // l'image, agrandie autour du trou noir quand on défile
+    const s = base.s * zoom;
+    const hx = base.x + CX * base.s + px, hy = base.y + CY * base.s + py;
+    ctx.translate(hx, hy); ctx.scale(s, s); ctx.translate(-CX, -CY);
+    if (fond.complete && fond.naturalWidth) ctx.drawImage(fond, 0, 0, IMG_L, IMG_H);
+    ctx.globalCompositeOperation = "lighter";
+    // la lueur qui respire
+    const souffle = .05 + .03 * Math.sin(temps * 1.3);
+    const lueur = ctx.createRadialGradient(CX, CY, R * .9, CX, CY, R * 6);
+    lueur.addColorStop(0, `rgba(244,244,246,${souffle})`); lueur.addColorStop(1, "rgba(244,244,246,0)");
+    ctx.fillStyle = lueur; ctx.fillRect(CX - R * 6, CY - R * 6, R * 12, R * 12);
+    // tout ce qui suit passe derrière l'ombre : on la découpe
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, IMG_L, IMG_H); ctx.arc(CX, CY, R * 1.02, 0, Math.PI * 2); ctx.clip("evenodd");
+    ctx.lineCap = "round";
+    for (const f of filets) {
+      f.a += f.v * dt;
+      const longueur = .18 + f.v * .5;                   // traînée plus longue près du centre, où ça tourne vite
+      const face = (1 + Math.cos(f.a)) / 2;              // le côté qui vient vers nous brille davantage
+      const alpha = f.e * (.1 + .22 * face) * (R * 2.2 / f.r);
+      ctx.beginPath();
+      for (let i = 0; i <= 8; i++) {
+        const [x, y] = point(f.r, f.a - longueur * (1 - i / 8));
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(244,244,246,${alpha * .35})`; ctx.lineWidth = f.w * 4; ctx.stroke();
+      ctx.strokeStyle = `rgba(255,255,255,${alpha})`; ctx.lineWidth = f.w; ctx.stroke();
+    }
+    for (const e of eclats) {
+      e.a += e.v * dt;
+      ctx.beginPath(); ctx.arc(CX, CY, e.r, e.a - .35, e.a);
+      ctx.strokeStyle = `rgba(255,255,255,${.12 * e.e})`; ctx.lineWidth = 6; ctx.stroke();
+      ctx.strokeStyle = `rgba(255,255,255,${.4 * e.e})`; ctx.lineWidth = 1.4; ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function boucle(t) {
+    const dt = Math.min(.05, (t - t0) / 1000 || .016); t0 = t;
+    if (visible) image(dt);
+    requestAnimationFrame(boucle);
+  }
+  dimensionner();
+  new ResizeObserver(dimensionner).observe(toile);     // le héros change de hauteur avec son contenu
+  if (calme) { fond.onload = () => image(0); return; }
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(heros);
+  heros.addEventListener("pointermove", e => {
+    pxV = (e.clientX / innerWidth - .5) * -24; pyV = (e.clientY / innerHeight - .5) * -16;
+  });
+  addEventListener("scroll", () => { zoom = 1 + borne(scrollY / innerHeight, 0, 1) * .55; }, { passive: true });
+  requestAnimationFrame(boucle);
+})();
+
+// ── Les étoiles de l'hyperespace : en fond de la dernière section, et en plein écran au clic ──────
+function hyperespace(toile, options) {
+  const ctx = toile.getContext("2d");
+  let L, H, etoiles = [], vitesse = options.vitesse, vise = options.vitesse, actif = true;
+  const nouvelle = () => ({ x: (Math.random() - .5) * 2, y: (Math.random() - .5) * 2, z: .05 + Math.random() * .95 });
+  function dimensionner() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    L = toile.clientWidth; H = toile.clientHeight;
+    toile.width = L * dpr; toile.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    etoiles = Array.from({ length: Math.round(borne(L * H / 1800, 250, 900)) }, nouvelle);
+  }
+  function image() {
+    vitesse += (vise - vitesse) * .06;
+    ctx.fillStyle = options.fond; ctx.fillRect(0, 0, L, H);
+    const f = Math.max(L, H) * .25, cx = L / 2, cy = H / 2;
+    ctx.lineCap = "round";
+    for (const e of etoiles) {
+      const z0 = e.z; e.z -= vitesse;
+      if (e.z <= .01) { Object.assign(e, nouvelle(), { z: 1 }); continue; }
+      const x = cx + e.x / e.z * f, y = cy + e.y / e.z * f;
+      if (x < -50 || x > L + 50 || y < -50 || y > H + 50) { Object.assign(e, nouvelle(), { z: 1 }); continue; }
+      const x0 = cx + e.x / z0 * f, y0 = cy + e.y / z0 * f;
+      const a = borne(1 - e.z, 0, 1);
+      ctx.strokeStyle = `rgba(244,244,246,${a})`; ctx.lineWidth = Math.max(.6, a * 2.2);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x, y); ctx.stroke();
+    }
+  }
+  function boucle() { if (actif) image(); requestAnimationFrame(boucle); }
+  dimensionner(); addEventListener("resize", dimensionner);
+  if (calme) { image(); return { accelerer() {}, ralentir() {}, activer() {} }; }
+  requestAnimationFrame(boucle);
+  return { accelerer(v) { vise = v; }, ralentir() { vise = options.vitesse; }, activer(a) { actif = a; } };
+}
+const fondSaut = hyperespace(document.getElementById("etoiles"), { vitesse: .004, fond: "rgba(5,5,6,.35)" });
+new IntersectionObserver(e => fondSaut.activer(e[0].isIntersecting)).observe(document.getElementById("saut"));
+const boutonSaut = document.getElementById("bouton-saut");
+boutonSaut.addEventListener("pointerenter", () => fondSaut.accelerer(.03));
+boutonSaut.addEventListener("pointerleave", () => fondSaut.ralentir());
+
+// « Installer CoOsmos » : un saut en hyperespace, puis les étapes
+(function () {
+  const toile = document.getElementById("saut-ecran");
+  let saut = null;
+  document.querySelectorAll(".sauter").forEach(a => a.addEventListener("click", e => {
+    if (calme) return;
+    e.preventDefault();
+    if (!saut) saut = hyperespace(toile, { vitesse: .01, fond: "rgba(5,5,6,.28)" });
+    saut.activer(true); saut.accelerer(.075);
+    toile.classList.add("actif");
+    setTimeout(() => {
+      document.getElementById("installer").scrollIntoView({ behavior: "instant" });
+      toile.classList.remove("actif");
+      setTimeout(() => { saut.ralentir(); saut.activer(false); }, 400);
+    }, 750);
+  }));
+})();
+
+// ── La barre du haut prend un fond de verre dès qu'on défile ──────────────────────────────────────
+const haut = document.getElementById("haut");
+const verre = () => haut.classList.toggle("colle", scrollY > 30);
+addEventListener("scroll", verre, { passive: true }); verre();
+
+// ── Les titres : mot à mot ────────────────────────────────────────────────────────────────────────
+document.querySelectorAll(".mots").forEach(titre => {
+  let i = 0;
+  const decouper = noeud => [...noeud.childNodes].forEach(n => {
+    if (n.nodeType === 3) {
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(m => {
+        if (!m) return;
+        if (/^\s+$/.test(m)) { frag.append(" "); return; }
+        const mot = document.createElement("span"); mot.className = "mot";
+        const dedans = document.createElement("span"); dedans.textContent = m; dedans.style.setProperty("--i", i++);
+        mot.append(dedans); frag.append(mot);
+      });
+      n.replaceWith(frag);
+    } else if (n.nodeType === 1) decouper(n);
+  });
+  decouper(titre);
+});
+
+// ── Apparition au défilement, et les compteurs ────────────────────────────────────────────────────
+function compter(el) {
+  const de = +el.dataset.de, a = +el.dataset.a, duree = 1600, t0 = performance.now();
+  if (calme) { el.textContent = a; return; }
+  const pas = t => {
+    const p = borne((t - t0) / duree, 0, 1), e = 1 - Math.pow(1 - p, 4);
+    el.textContent = Math.round(de + (a - de) * e);
+    if (p < 1) requestAnimationFrame(pas);
+  };
+  requestAnimationFrame(pas);
+}
+const observateur = new IntersectionObserver(entrees => entrees.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("vu"); observateur.unobserve(e.target);
+  e.target.querySelectorAll(".compteur").forEach(compter);
+}), { threshold: .15, rootMargin: "0px 0px -6% 0px" });
+document.querySelectorAll(".revele, .mots").forEach(el => observateur.observe(el));
+
+// ── L'aperçu : la fenêtre se redresse en arrivant, la barre des tâches change d'application ─────────
+const captures = [
+  ["Bureau", "bureau-menu", "<b>Le menu Démarrer</b> : toutes les applications par ordre alphabétique, les vignettes épinglées à droite, l'alimentation en bas."],
+  ["Paramètres", "parametres", "<b>Paramètres › Écran</b> : luminosité, éclairage nocturne, mise à l'échelle, résolution, orientation, écrans multiples — et « Conserver ces paramètres ? » au bout de 15 secondes."],
+  ["Explorateur", "hangar", "<b>L'Explorateur de fichiers</b> : onglets, barre de commandes, volet de navigation et volet de détails."],
+  ["Sécurité", "securite", "<b>La sécurité en un coup d'œil</b> : antivirus, protection du compte, pare-feu, sécurité de l'appareil, mises à jour, confidentialité."],
+  ["Programmes Windows", "portail", "<b>Un programme Windows</b>, lancé d'un double-clic sur son <code>.exe</code>, directement sur le bureau de CoOsmos."],
+  ["Gestionnaire des tâches", "gestionnaire-taches", "<b>Le Gestionnaire des tâches</b> : processus, performances en direct, applications de démarrage, services."],
+  ["Outil Capture", "outil-capture", "<b>L'Outil Capture d'écran</b> : rectangle, fenêtre, plein écran ou forme libre, annotations, recadrage, vidéo."],
+  ["Paint", "paint", "<b>Paint</b> : pinceaux, formes, texte, sélection, palette, zoom — le dessin comme on l'a toujours fait."],
+];
+(function () {
+  const vue = document.getElementById("vue"), barre = document.getElementById("barre"), legende = document.getElementById("legende");
+  const ecran = document.getElementById("ecran");
+  const DUREE = 6000;
+  barre.style.setProperty("--duree", DUREE + "ms");
+  const paires = captures.map(([nom, fichier], i) => {
+    const img = new Image(); img.src = `images/${fichier}.png`; img.alt = tr(nom); img.loading = i ? "lazy" : "eager"; img.decoding = "async";
+    vue.appendChild(img);
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "tab"); b.append(tr(nom), document.createElement("i"));
+    b.addEventListener("click", () => { arreter(); choisir(i); });
+    barre.appendChild(b);
+    return [img, b];
+  });
+  let actuelle = -1, minuteur = null;
+  function choisir(i) {
+    if (i === actuelle) return;
+    actuelle = i;
+    paires.forEach(([img, b], n) => { img.classList.toggle("actif", n === i); b.setAttribute("aria-selected", n === i); });
+    legende.innerHTML = tr(captures[i][2]);
+    const b = paires[i][1];
+    barre.scrollTo({ left: b.offsetLeft - barre.clientWidth / 2 + b.offsetWidth / 2, behavior: "smooth" });
+  }
+  function arreter() { clearInterval(minuteur); minuteur = null; barre.classList.add("arrete"); }
+  choisir(0);
+  if (!calme) {
+    // le diaporama ne tourne que lorsque la fenêtre est à l'écran
+    new IntersectionObserver(e => {
+      if (e[0].isIntersecting && !minuteur && !barre.classList.contains("arrete")) {
+        minuteur = setInterval(() => choisir((actuelle + 1) % captures.length), DUREE);
+      } else if (!e[0].isIntersecting && minuteur) { clearInterval(minuteur); minuteur = null; }
+    }, { threshold: .3 }).observe(ecran);
+  }
+  // la fenêtre se redresse au fil du défilement
+  const redresser = () => {
+    const r = ecran.getBoundingClientRect(), vh = innerHeight;
+    const p = calme ? 1 : borne((vh - r.top) / (vh * .85), 0, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    ecran.style.setProperty("--rx", `${(1 - e) * 24}deg`);
+    ecran.style.setProperty("--sc", .86 + e * .14);
+    ecran.style.setProperty("--ty", `${(1 - e) * 60}px`);
+  };
+  addEventListener("scroll", () => requestAnimationFrame(redresser), { passive: true });
+  redresser();
+})();
+
+// ── La frise de l'installation se remplit au fil des étapes ───────────────────────────────────────
+(function () {
+  const frise = document.getElementById("frise"), remplie = frise.querySelector(".remplie");
+  const maj = () => {
+    const r = frise.getBoundingClientRect();
+    remplie.style.setProperty("--p", borne((innerHeight * .55 - r.top) / r.height, 0, 1));
+  };
+  addEventListener("scroll", () => requestAnimationFrame(maj), { passive: true });
+  maj();
+})();
+
+// ── Firefox : l'empreinte passe de Windows à Linux, et inversement ────────────────────────────────
+if (!calme) setInterval(() => document.getElementById("empreinte").classList.toggle("linux"), 2400);
+
+// ── Effets au survol (souris seulement) : projecteur des cartes, boutons aimantés, images inclinées ─
+if (!tactile && !calme) {
+  document.querySelectorAll(".carte").forEach(c => c.addEventListener("pointermove", e => {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty("--x", `${e.clientX - r.left}px`); c.style.setProperty("--y", `${e.clientY - r.top}px`);
+  }));
+  document.querySelectorAll(".magnetique").forEach(b => {
+    b.addEventListener("pointermove", e => {
+      const r = b.getBoundingClientRect();
+      b.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * .22}px, ${(e.clientY - r.top - r.height / 2) * .32}px)`;
+    });
+    b.addEventListener("pointerleave", () => { b.style.transform = ""; });
+  });
+  document.querySelectorAll(".inclinable").forEach(im => {
+    im.addEventListener("pointermove", e => {
+      const r = im.getBoundingClientRect();
+      im.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - .5) * 10}deg`);
+      im.style.setProperty("--rx2", `${((e.clientY - r.top) / r.height - .5) * -8}deg`);
+    });
+    im.addEventListener("pointerleave", () => { im.style.setProperty("--ry", "0deg"); im.style.setProperty("--rx2", "0deg"); });
+  });
+}
+
+// ── Captures d'écran du site (?vue=section) : on se place sur la section, tout est déjà apparu ────
+(function () {
+  const id = new URLSearchParams(location.search).get("vue");
+  const cible = id && document.getElementById(id);
+  if (!cible) return;
+  document.documentElement.style.scrollBehavior = "auto";
+  document.documentElement.classList.add("capture");
+  document.querySelectorAll(".revele, .mots").forEach(el => el.classList.add("vu"));
+  document.querySelectorAll(".compteur").forEach(el => { el.textContent = el.dataset.a; });
+  // ce qui précède la section est masqué : elle arrive en haut sans défilement
+  for (const el of document.querySelector("main").children) {
+    if (el === cible || el.contains(cible)) break;
+    el.style.display = "none";
+  }
+  dispatchEvent(new Event("scroll"));
+})();
+</script>
+</body>
+</html>
