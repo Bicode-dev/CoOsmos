@@ -11,6 +11,9 @@ const TRADUISIBLES = [
   ".saut h2", ".saut p", ".carte .nom-app", ".carte h3", ".carte p", ".puces span", ".zeros strong", ".zeros p",
   ".etape h3", ".etape > div > p", ".etape li", ".note", ".config dt", ".config small", ".unite", "summary",
   "details p", "footer nav a",
+  // la page des mentions légales
+  ".legal h1", ".legal .maj", ".sommaire a", ".legal h2", ".legal section > p", ".legal .carte p", ".legal section li",
+  ".legal th", ".legal td",
 ].join(", ");
 
 const normaliser = s => s.replace(/\s+/g, " ").trim();
