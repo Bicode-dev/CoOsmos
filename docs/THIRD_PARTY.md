@@ -32,6 +32,11 @@ CoOsmos repose sur Arch Linux. Ce fichier liste ce qui n'est pas écrit par CoOs
 | BlueZ | Bluetooth (réglages rapides, Paramètres) | GPL-2.0 / LGPL-2.1 |
 | gammastep | Éclairage nocturne (teinte de l'écran) | GPL-3.0 |
 | brightnessctl | Luminosité de l'écran intégré | MIT |
+| libayatana-appindicator | Icône de notification des applications (Co-Craft) | LGPL-2.1 / LGPL-3.0 |
+| mpv (libmpv) | Lecture audio et vidéo des applications (Co-Musique, Co-Chan) | GPL-2.0-or-later |
+| WPE WebKit | Moteur web des applications qui l'embarquent (Co-Chan) | LGPL-2.1 / BSD-2-Clause |
+| libwpe | Bibliothèque de base de WPE WebKit, construite par CoOsmos | BSD-2-Clause |
+| power-profiles-daemon | Économiseur d'énergie (profils d'énergie) | GPL-3.0 |
 | uBlock Origin *(extension Firefox, installée d'office)* | Bloqueur de publicités et de pisteurs | GPL-3.0 |
 | Privacy Badger *(extension Firefox, installée d'office)* | Protection contre le pistage | GPL-3.0 |
 | User-Agent Switcher and Manager *(extension Firefox, installée d'office)* | Bouton « empreinte Windows / Linux » | MPL-2.0 |
