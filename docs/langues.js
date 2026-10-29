@@ -1,4 +1,4 @@
-// Les langues du site : celles des régions que CoOsmos prend en charge (formats et claviers). La langue
+// Les langues du site : celles des régions que Co-Osmos prend en charge (formats et claviers). La langue
 // vient des réglages du navigateur du visiteur, sans aucune requête vers un service tiers (une adresse IP
 // ne dit pas quelle langue on lit, et l'envoyer à un service de géolocalisation trahirait « aucune donnée
 // envoyée »). Le choix fait dans le menu est retenu sur cet appareil. ?lang=xx force une langue.
@@ -50,7 +50,7 @@ function tr(francais) {
   document.title = tr(document.title);
   const desc = document.querySelector('meta[name="description"]');
   if (desc) desc.content = tr(desc.content);
-  // l'interface de CoOsmos est en français : on le dit à ceux qui lisent le site dans une autre langue
+  // l'interface de Co-Osmos est en français : on le dit à ceux qui lisent le site dans une autre langue
   if (langueDuSite !== "fr") document.querySelectorAll(".note-langue").forEach(n => { n.hidden = false; });
 })();
 

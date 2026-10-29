@@ -1,6 +1,6 @@
 # Composants tiers
 
-CoOsmos repose sur Arch Linux. Ce fichier liste ce qui n'est pas écrit par CoOsmos, avec la licence.
+Co-Osmos repose sur Arch Linux. Ce fichier liste ce qui n'est pas écrit par Co-Osmos, avec la licence.
 
 | Composant | Rôle | Licence |
 |-----------|------|---------|
@@ -35,7 +35,7 @@ CoOsmos repose sur Arch Linux. Ce fichier liste ce qui n'est pas écrit par CoOs
 | libayatana-appindicator | Icône de notification des applications (Co-Craft) | LGPL-2.1 / LGPL-3.0 |
 | mpv (libmpv) | Lecture audio et vidéo des applications (Co-Musique, Co-Chan) | GPL-2.0-or-later |
 | WPE WebKit | Moteur web des applications qui l'embarquent (Co-Chan) | LGPL-2.1 / BSD-2-Clause |
-| libwpe | Bibliothèque de base de WPE WebKit, construite par CoOsmos | BSD-2-Clause |
+| libwpe | Bibliothèque de base de WPE WebKit, construite par Co-Osmos | BSD-2-Clause |
 | power-profiles-daemon | Économiseur d'énergie (profils d'énergie) | GPL-3.0 |
 | uBlock Origin *(extension Firefox, installée d'office)* | Bloqueur de publicités et de pisteurs | GPL-3.0 |
 | Privacy Badger *(extension Firefox, installée d'office)* | Protection contre le pistage | GPL-3.0 |
