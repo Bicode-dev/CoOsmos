@@ -1,12 +1,12 @@
 {
  "version": 1,
- "date": "2026-10-29 11:33",
+ "date": "2026-10-30 13:15",
  "paquets": [
   {
    "nom": "coosmos-atelier",
    "version": "0.1.2-2",
    "fichier": "coosmos-atelier-0.1.2-2-any.pkg.tar.zst",
-   "sha256": "1609516772c181a255966fa990fb04b0579c8d370d421b141713f93a6f934a02",
+   "sha256": "39bb187c7638b428ac5ebc4711af22ea3f88d03139c8934a622934f17006a6ad",
    "dependances": [
     "coosmos-ui"
    ],
@@ -17,7 +17,7 @@
    "nom": "coosmos-base",
    "version": "0.5.4-2",
    "fichier": "coosmos-base-0.5.4-2-any.pkg.tar.zst",
-   "sha256": "697ce14e41adb5d7bf3d65390bc090f54080c8159e0bf51fd754aa0ea88b7c9e",
+   "sha256": "100b571347342ff7246aac741bda784ba08c6cd7747920dce464c1d3c417f752",
    "dependances": [],
    "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-base-0.5.4-2-any.pkg.tar.zst",
    "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-base-0.5.4-2-any.pkg.tar.zst.sig"
@@ -26,7 +26,7 @@
    "nom": "coosmos-bloc-notes",
    "version": "0.1.2-2",
    "fichier": "coosmos-bloc-notes-0.1.2-2-any.pkg.tar.zst",
-   "sha256": "abb203756d5d68518c3db9603050794ea4f9800a4aa8ea89c539df7756af5438",
+   "sha256": "dad4e40f634e689e536fb62958e50c749cdff1b3b6e6abdbdd77e0c7ccee5f3f",
    "dependances": [
     "coosmos-ui"
    ],
@@ -37,7 +37,7 @@
    "nom": "coosmos-calculatrice",
    "version": "0.1.0-2",
    "fichier": "coosmos-calculatrice-0.1.0-2-any.pkg.tar.zst",
-   "sha256": "82e0ec4e2f41d793a01c324c45c1bf19a833fc8857a2845f49163f4375d42e45",
+   "sha256": "49b33f0074cb2b07670af96bf08125d3664e56bf355774116350df8cbfbb47b4",
    "dependances": [
     "coosmos-ui"
    ],
@@ -48,7 +48,7 @@
    "nom": "coosmos-capture",
    "version": "0.1.1-2",
    "fichier": "coosmos-capture-0.1.1-2-any.pkg.tar.zst",
-   "sha256": "88a61d0676ecdae93154e907d0fb8a2131cd9a8389274f1d58858078e188cc4f",
+   "sha256": "e3ebce7a71594fcd76dc60c825266f034597327aaaedd0300e3a645bb506608d",
    "dependances": [
     "coosmos-ui"
    ],
@@ -59,7 +59,7 @@
    "nom": "coosmos-deb",
    "version": "0.1.0-1",
    "fichier": "coosmos-deb-0.1.0-1-any.pkg.tar.zst",
-   "sha256": "2ee5c6860cae2e792b41ff3593bba739943a26df34d463b760963898e0f14037",
+   "sha256": "cf4ac85ad5b2ed8c9993f7ae2dd1e5b0747f2062475279ee495665915ede4379",
    "dependances": [
     "coosmos-ui"
    ],
@@ -70,7 +70,7 @@
    "nom": "coosmos-decollage",
    "version": "0.4.2-3",
    "fichier": "coosmos-decollage-0.4.2-3-any.pkg.tar.zst",
-   "sha256": "d0d44998a8cec2135b00038dd87136eb534bbf2b1a63cd13f57705ef3b379b25",
+   "sha256": "af4b85fee58578ab4da680e9e56b89397e01fccd49f1a1056a818a747e624b49",
    "dependances": [
     "coosmos-session",
     "coosmos-ui"
@@ -82,7 +82,7 @@
    "nom": "coosmos-demarrage",
    "version": "0.3.1-2",
    "fichier": "coosmos-demarrage-0.3.1-2-any.pkg.tar.zst",
-   "sha256": "84a0d503150b4604892b5c8b0ca9896a16ee17f8331304a8c69f4b0899e0ec6c",
+   "sha256": "8ac64e79799e43582f297da5bdc85766a4123213d5ca6d3625feeeae053f4b94",
    "dependances": [],
    "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-demarrage-0.3.1-2-any.pkg.tar.zst",
    "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-demarrage-0.3.1-2-any.pkg.tar.zst.sig"
@@ -91,7 +91,7 @@
    "nom": "coosmos-depannage",
    "version": "0.1.0-2",
    "fichier": "coosmos-depannage-0.1.0-2-any.pkg.tar.zst",
-   "sha256": "6a77a260e0525b65edfef875444b4f938848df14caef078f8d53f3490f32088d",
+   "sha256": "7f322cf2d970e078223948eec2d205943814bfa39dfa7f1c2b04db551718a32b",
    "dependances": [
     "coosmos-pulsar",
     "coosmos-ui"
@@ -103,7 +103,7 @@
    "nom": "coosmos-hangar",
    "version": "0.4.0-1",
    "fichier": "coosmos-hangar-0.4.0-1-any.pkg.tar.zst",
-   "sha256": "fb0b58286ff0c971449662251d6f5355fbd862f304af6259d9e3a27d946c4ef9",
+   "sha256": "cb5f5d3e4889f259251e263e1627aaa3d3cf9fca51d51b0605e53b68a3c35e72",
    "dependances": [
     "coosmos-ui"
    ],
@@ -114,7 +114,7 @@
    "nom": "coosmos-hyperespace",
    "version": "0.3.3-1",
    "fichier": "coosmos-hyperespace-0.3.3-1-x86_64.pkg.tar.zst",
-   "sha256": "a74f1bbfc9e7c172c843ca257ed1f477686117cd1a85ed8856d67337f5a06af2",
+   "sha256": "7a4f1d65ae01c6c5092179c83b4dccb2ea6cc1ddfbba582e3092e5a5e424dc9c",
    "dependances": [],
    "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-hyperespace-0.3.3-1-x86_64.pkg.tar.zst",
    "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-hyperespace-0.3.3-1-x86_64.pkg.tar.zst.sig"
@@ -123,7 +123,7 @@
    "nom": "coosmos-jeux",
    "version": "0.1.0-2",
    "fichier": "coosmos-jeux-0.1.0-2-any.pkg.tar.zst",
-   "sha256": "39f6a392adef07901c7ef928231343e708357c068626bac979dd3f9cc14cfeb5",
+   "sha256": "fbc9344331b44a76ffaf84f85fbbb5b3e7dbe9554c4bf197184f64354208efee",
    "dependances": [],
    "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-jeux-0.1.0-2-any.pkg.tar.zst",
    "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-jeux-0.1.0-2-any.pkg.tar.zst.sig"
@@ -132,7 +132,7 @@
    "nom": "coosmos-lecteur",
    "version": "0.2.0-2",
    "fichier": "coosmos-lecteur-0.2.0-2-any.pkg.tar.zst",
-   "sha256": "c078f541d551a4f9056fc31fa9be745bcc404579c49372c0e2c92bc5d5deb5b8",
+   "sha256": "ab9dbf010371bfff6c2973e2ac11429f95cc23c1aef88dd3c5a95d90168959a7",
    "dependances": [
     "coosmos-ui"
    ],
@@ -141,18 +141,18 @@
   },
   {
    "nom": "coosmos-orbite",
-   "version": "0.5.7-2",
-   "fichier": "coosmos-orbite-0.5.7-2-any.pkg.tar.zst",
-   "sha256": "be8a9bab9a22b0693bc8f47c40badfd4e3e4f818e89dfceb2baba0a1fcca4318",
+   "version": "0.5.8-1",
+   "fichier": "coosmos-orbite-0.5.8-1-any.pkg.tar.zst",
+   "sha256": "11981d6a700fe0ecca5dcd64a14f75daaa4fb5ed9367501a0d3462d72dd97f92",
    "dependances": [],
-   "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-orbite-0.5.7-2-any.pkg.tar.zst",
-   "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-orbite-0.5.7-2-any.pkg.tar.zst.sig"
+   "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-orbite-0.5.8-1-any.pkg.tar.zst",
+   "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-orbite-0.5.8-1-any.pkg.tar.zst.sig"
   },
   {
    "nom": "coosmos-paint",
    "version": "0.1.0-2",
    "fichier": "coosmos-paint-0.1.0-2-any.pkg.tar.zst",
-   "sha256": "2d49b08fb070ca2ff0d7eed1a4753ff406cacfef61161d540bdb284f43d6c40b",
+   "sha256": "a2f68ff64ece131d8c959b65cfc42241955d292dc2b25a94d99afc71b576519d",
    "dependances": [
     "coosmos-ui"
    ],
@@ -163,7 +163,7 @@
    "nom": "coosmos-photos",
    "version": "0.1.0-2",
    "fichier": "coosmos-photos-0.1.0-2-any.pkg.tar.zst",
-   "sha256": "29a4731ce63e2ebc12adecb1b9beba6ba553c705c484812c53f9db40796e0b8c",
+   "sha256": "4943073caa2b1efa15bfa4e37ebb9e3852572d31e0b81b7c7dbb5175b866eb81",
    "dependances": [
     "coosmos-ui"
    ],
@@ -174,7 +174,7 @@
    "nom": "coosmos-portail",
    "version": "0.2.3-2",
    "fichier": "coosmos-portail-0.2.3-2-any.pkg.tar.zst",
-   "sha256": "2952cadbee16c3efcccb0e23241f438ae9eac5c31a6b39150c10966d5534cd83",
+   "sha256": "6a7d9cd61a2745e76c486ec6792a5d7f073e25437213b66333c043a073d60693",
    "dependances": [
     "coosmos-pulsar",
     "coosmos-ui"
@@ -186,7 +186,7 @@
    "nom": "coosmos-pulsar",
    "version": "0.2.1-2",
    "fichier": "coosmos-pulsar-0.2.1-2-any.pkg.tar.zst",
-   "sha256": "178b00dcea162f1adbf052d94c7ec14b63e7c394c6518e932f897833b340a70f",
+   "sha256": "deeaa900942300ae8afec69acf353503133a1c293d6e792a271289b003f9b05b",
    "dependances": [
     "coosmos-ui"
    ],
@@ -197,7 +197,7 @@
    "nom": "coosmos-securite",
    "version": "0.2.2-2",
    "fichier": "coosmos-securite-0.2.2-2-any.pkg.tar.zst",
-   "sha256": "d282c77020c1c9bab5c808ce00acac3dcdc73ae14004fba28963f3b9cbe7d850",
+   "sha256": "e55a02f39cb82880d87468df38f748cbacadc0fe71921668e8c1fa1f657e5e4e",
    "dependances": [
     "coosmos-ui"
    ],
@@ -208,7 +208,7 @@
    "nom": "coosmos-session",
    "version": "0.3.13-2",
    "fichier": "coosmos-session-0.3.13-2-any.pkg.tar.zst",
-   "sha256": "94caf22ed0e5f9ec11e4e930bca40dc0c3446349ffc0a6f9c8b1313dde666b2b",
+   "sha256": "eaa31d248db16480132a8b364c03342d25ab23f6bf6d9fd798a535b952da69d4",
    "dependances": [
     "coosmos-base",
     "coosmos-deb",
@@ -220,22 +220,22 @@
   },
   {
    "nom": "coosmos-station",
-   "version": "0.6.3-3",
-   "fichier": "coosmos-station-0.6.3-3-any.pkg.tar.zst",
-   "sha256": "ddeb23c8a53c192e9a08a2ac67717126608fa1b9ae64ab22eb67f0af25f75656",
+   "version": "0.6.3-4",
+   "fichier": "coosmos-station-0.6.3-4-any.pkg.tar.zst",
+   "sha256": "238b09bbcf10cade991ee3c94720543a5b0200e63305e923950b669fc28c998e",
    "dependances": [
     "coosmos-ui",
     "coosmos-version",
     "coosmos-wayfire"
    ],
-   "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-station-0.6.3-3-any.pkg.tar.zst",
-   "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-station-0.6.3-3-any.pkg.tar.zst.sig"
+   "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-station-0.6.3-4-any.pkg.tar.zst",
+   "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-station-0.6.3-4-any.pkg.tar.zst.sig"
   },
   {
    "nom": "coosmos-taches",
    "version": "0.3.0-2",
    "fichier": "coosmos-taches-0.3.0-2-any.pkg.tar.zst",
-   "sha256": "bea9e87ebd9c10f28c227e4dffb5a466a3a4c9e1135e9cac75083d66a1f25f5b",
+   "sha256": "46459baca0783069aac2a9a4033de7093b6135b9860e82690b2a0c1857905e0f",
    "dependances": [
     "coosmos-ui"
    ],
@@ -246,25 +246,25 @@
    "nom": "coosmos-ui",
    "version": "0.1.1-2",
    "fichier": "coosmos-ui-0.1.1-2-any.pkg.tar.zst",
-   "sha256": "d89038b63b3e38216d68fc2b7d501827fc0412c2c658638fcf8ca0d21640aa7c",
+   "sha256": "2d1c422a2e7200a450fe7e75a1bb273468586d2670d43e5de52239365dcbf901",
    "dependances": [],
    "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-ui-0.1.1-2-any.pkg.tar.zst",
    "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-ui-0.1.1-2-any.pkg.tar.zst.sig"
   },
   {
    "nom": "coosmos-version",
-   "version": "2026.10.29-1",
-   "fichier": "coosmos-version-2026.10.29-1-any.pkg.tar.zst",
-   "sha256": "f698d5d6b4ef02ebf81d3ef23b80bce95bf5260358df5661a5a15ec19945dde7",
+   "version": "2026.10.30-1",
+   "fichier": "coosmos-version-2026.10.30-1-any.pkg.tar.zst",
+   "sha256": "5b6b2150eaf726064976d618b4fd7f803d03425936a9de2850eca297d20fd4f4",
    "dependances": [],
-   "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-version-2026.10.29-1-any.pkg.tar.zst",
-   "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-version-2026.10.29-1-any.pkg.tar.zst.sig"
+   "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-version-2026.10.30-1-any.pkg.tar.zst",
+   "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-version-2026.10.30-1-any.pkg.tar.zst.sig"
   },
   {
    "nom": "coosmos-wayfire",
    "version": "0.1.0-2",
    "fichier": "coosmos-wayfire-0.1.0-2-x86_64.pkg.tar.zst",
-   "sha256": "2824d9217e54bd869c453bf71fc831d28ce9adaf2550283d472f38772fd0f794",
+   "sha256": "367daee377dfd4df665dfb922ceeecf45291a15bc0712324e26856bfb136b242",
    "dependances": [],
    "url": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-wayfire-0.1.0-2-x86_64.pkg.tar.zst",
    "sig": "https://github.com/Bicode-dev/CoOsmos/releases/download/depot/coosmos-wayfire-0.1.0-2-x86_64.pkg.tar.zst.sig"
